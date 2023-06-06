@@ -111,12 +111,19 @@ def build_argparser():
 def draw_labels(frame, classifications, output_transform):
     frame = output_transform.resize(frame)
     len_, digits = classifications
+    len_str = f'Digits len: {len_}    '
     font_scale = 0.7
-    label_height = cv2.getTextSize(str(len_), cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][1]
+    label_width = cv2.getTextSize(len_str, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
+    label_height = cv2.getTextSize(len_str, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][1]
     initial_labels_pos =  frame.shape[0] - label_height * 2
-
-    header = ",".join([str(x) for x in digits])
     offset_y = initial_labels_pos
+    put_highlighted_text(frame, len_str, (frame.shape[1] - label_width, offset_y),
+        cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
+
+    offset_y -= int(1.5 * label_height)
+    masked_digits = [str(x) if x < 10 else '_' for x in digits][:len_] + ['_'] * (5 - len_)
+    header = ",".join(masked_digits)
+    header = f"Result: {header}"
     label_width = cv2.getTextSize(header, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][0]
     put_highlighted_text(frame, header, (frame.shape[1] - label_width, offset_y),
         cv2.FONT_HERSHEY_COMPLEX, font_scale, (255, 0, 0), 2)
@@ -163,8 +170,8 @@ def main():
     presenter = None
     output_transform = None
     size = (54, 54)
-    video_writer = cv2.VideoWriter('output.avi',
-                                    cv2.VideoWriter_fourcc(*'MJPG'), 10, size)
+    video_writer = cv2.VideoWriter()
+        #'output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 10, size)
     ESC_KEY = 27
     key = -1
     while True:

@@ -96,8 +96,12 @@ class CustomClassification(ImageModel):
         self._check_io_number(1, 6)
 
         outputs = sorted(list(self.outputs.keys()))
-        self._len_output = outputs[0]
-        self._digit_outputs = outputs[1:]
+        if any('digit' in name for name in outputs):
+            self._len_output = 'length_logits'
+            self._digit_outputs = [f'digit{i}_logits' for i in range(1, 6)]
+        else:
+            self._len_output = outputs[0]
+            self._digit_outputs = outputs[1:]
 
     def _load_labels(self, labels_file):
         with open(labels_file, 'r') as f:
